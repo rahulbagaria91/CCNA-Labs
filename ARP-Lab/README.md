@@ -29,7 +29,7 @@ The lab was created using Cisco Packet Tracer as part of my CCNA practical learn
 
 > **Network Topology**
 
-![Topology](ARP-Lab/screenshots/topology.png)
+![Topology](ARP-Lab/ARP-Lab/screenshots/Topologies.png)
 
 ---
 
