@@ -1,28 +1,54 @@
-# Address Resolution Protocol (ARP) Lab
+# 🌐 Address Resolution Protocol (ARP) Lab
 
-## Overview
-
-This lab demonstrates how Address Resolution Protocol (ARP) resolves IPv4 addresses to MAC addresses in a local network and how routers perform ARP independently for different broadcast domains.
+![Cisco](https://img.shields.io/badge/Cisco-Packet%20Tracer-blue)
+![CCNA](https://img.shields.io/badge/CCNA-200--301-red)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
 ---
 
-## Objectives
+# 📖 Overview
+
+This lab demonstrates how the Address Resolution Protocol (ARP) works in a Local Area Network (LAN) and across different subnets using a Cisco Router.
+
+The lab was created using Cisco Packet Tracer as part of my CCNA practical learning journey.
+
+---
+
+# 🎯 Objectives
 
 - Understand ARP Request
 - Understand ARP Reply
-- Observe ARP Cache
-- Verify ARP using Packet Tracer
+- Learn ARP Cache
+- Observe ARP using Simulation Mode
+- Verify Router ARP Table
 - Understand why ARP does not cross routers
 
 ---
 
-## Network Topology
+# 🛠 Lab Topology
 
-![Topology](screenshots/topology.png)
+> **Network Topology**
+
+![Topology](ARP-Lab/screenshots/topology.png)
 
 ---
 
-## IP Addressing
+# 🌍 Network Design
+
+```
+                 LAN 1
+
+Laptop0 -------- Switch -------- Router -------- Switch -------- Laptop2
+      \                                           \
+       \                                           \
+      Laptop1                                     Laptop3
+
+                 LAN 2
+```
+
+---
+
+# 🖥 IP Addressing
 
 | Device | IP Address | Subnet Mask | Default Gateway |
 |---------|------------|-------------|-----------------|
@@ -35,91 +61,148 @@ This lab demonstrates how Address Resolution Protocol (ARP) resolves IPv4 addres
 
 ---
 
-## Router Configuration
+# ⚙ Router Configuration
 
-```bash
+```cisco
 enable
 
 configure terminal
 
-interface g0/0/0
-ip address 192.168.1.1 255.255.255.0
-no shutdown
+interface GigabitEthernet0/0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
 
-interface g0/0/1
-ip address 192.168.2.1 255.255.255.0
-no shutdown
+interface GigabitEthernet0/0/1
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
 
 end
+
 write memory
 ```
 
 ---
 
-## Commands Used
+# 📌 Commands Used
 
 ```bash
 arp -a
+
 arp -d
-ping
+
+ping 192.168.2.20
+
 show ip arp
+
 show ip interface brief
 ```
 
 ---
 
-## Verification
+# 🔍 Lab Verification
 
-### Empty ARP Cache
+## 1️⃣ IP Configuration
 
-![Empty ARP Cache](screenshots/empty-arp-cache.png)
-
----
-
-### ARP Request
-
-![ARP Request](screenshots/arp-request.png)
+![IP Configuration](ARP-Lab/screenshots/ip-configuration.png)
 
 ---
 
-### ARP Reply
+## 2️⃣ Empty ARP Cache
 
-![ARP Reply](screenshots/arp-reply.png)
+```bash
+arp -a
+```
 
----
+Output:
 
-### Successful Ping
+```
+No ARP Entries Found
+```
 
-![Ping](screenshots/successful-ping.png)
-
----
-
-### Router ARP Table
-
-![Router ARP](screenshots/router-arp-table.png)
+![Empty ARP Cache](ARP-Lab/screenshots/empty-arp-cache.png)
 
 ---
 
-## Key Learnings
+## 3️⃣ ARP Request
+
+When the MAC address is unknown, the sender broadcasts an ARP Request.
+
+![ARP Request](ARP-Lab/screenshots/arp-request.png)
+
+---
+
+## 4️⃣ Successful Ping
+
+After ARP resolution completes, the ping succeeds.
+
+![Successful Ping](ARP-Lab/screenshots/successful-ping.png)
+
+---
+
+## 5️⃣ ARP Cache After Communication
+
+The sender stores the MAC address of the default gateway in its ARP cache.
+
+![ARP Cache](ARP-Lab/screenshots/arp-cache-after-ping.png)
+
+---
+
+## 6️⃣ Router Interface Configuration
+
+![Router Interfaces](ARP-Lab/screenshots/router-interface-config.png)
+
+---
+
+## 7️⃣ Router ARP Table
+
+Verify using:
+
+```bash
+show ip arp
+```
+
+![Router ARP Table](ARP-Lab/screenshots/router-arp-table.png)
+
+---
+
+## 8️⃣ Packet Flow
+
+Simulation Mode confirms the packet sequence.
+
+![Event List](ARP-Lab/screenshots/event-list.png)
+
+---
+
+# 📚 Key Learnings
 
 - ARP maps IPv4 addresses to MAC addresses.
-- ARP Requests are Layer 2 broadcasts.
-- ARP Replies are unicast.
+- ARP Request is a Layer 2 Broadcast.
+- ARP Reply is Unicast.
 - ARP works only inside the local broadcast domain.
 - Routers do not forward ARP broadcasts.
-- A host communicates with remote networks using the MAC address of its default gateway.
+- Devices communicate with remote networks through the MAC address of the default gateway.
 
 ---
 
-## Interview Questions
+# 💼 Interview Questions
 
 ### What is ARP?
 
-Address Resolution Protocol maps an IPv4 address to a MAC address on a local network.
+ARP (Address Resolution Protocol) resolves an IPv4 address to a MAC address.
 
-### Why doesn't ARP cross routers?
+---
 
-Because ARP uses Layer 2 broadcast frames, and routers do not forward Layer 2 broadcasts.
+### Why is ARP needed?
+
+Because Ethernet communication requires MAC addresses, while applications use IP addresses.
+
+---
+
+### Why doesn't ARP cross a router?
+
+Routers separate broadcast domains and do not forward Layer 2 broadcasts.
+
+---
 
 ### Which command displays the ARP table?
 
@@ -129,14 +212,32 @@ show ip arp
 
 ---
 
-## Files
+### Why does Laptop0 only learn the MAC address of 192.168.1.1?
 
-- ARP-Lab.pkt
-- README.md
-- Screenshots
+Because the destination (192.168.2.20) is on another subnet, so Laptop0 sends traffic to its default gateway.
 
 ---
 
-## Author
+# 📁 Files Included
 
-Rahul Bagaria
+- ARP-Lab.pkt
+- README.md
+- Packet Tracer Screenshots
+
+---
+
+# 🏁 Conclusion
+
+This lab demonstrates the complete ARP workflow, including ARP Request, ARP Reply, ARP Cache, router ARP processing, and communication between different subnets using a Cisco Router.
+
+---
+
+# 👨‍💻 Author
+
+**Rahul Bagaria**
+
+- CCNA Student
+- Networking Enthusiast
+- Cybersecurity Learner
+
+⭐ If you found this repository useful, consider giving it a **Star**.
