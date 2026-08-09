@@ -1,90 +1,160 @@
-# Inter-VLAN Routing Lab
+# 🌐 Inter-VLAN Routing Lab
 
-A hands-on Cisco Packet Tracer lab demonstrating **VLAN segmentation, 802.1Q trunking, and Router-on-a-Stick inter-VLAN routing**.
-
-> **Status:** Completed  
-> **Platform:** Cisco Packet Tracer  
-> **Focus:** CCNA Switching & Routing
+![Cisco](https://img.shields.io/badge/Cisco-Packet%20Tracer-1BA0D7)
+![CCNA](https://img.shields.io/badge/CCNA-200--301-red)
+![Networking](https://img.shields.io/badge/Networking-Inter--VLAN%20Routing-blue)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
 ---
 
-## Overview
+## 📖 Overview
 
-This lab builds a small enterprise-style LAN with **2 Cisco switches, 1 router, and 7 end devices**.
+This lab demonstrates **Inter-VLAN Routing using Router-on-a-Stick** in Cisco Packet Tracer.
 
-The objective is to separate users into different VLANs and then configure the router to provide communication between those VLANs.
+The network was built as a hands-on CCNA lab using:
 
-### Concepts demonstrated
-
-- VLAN creation and naming
-- Access-port configuration
+- 1 Cisco Router
+- 2 Cisco Switches
+- 7 End Devices
+- Multiple VLANs
 - 802.1Q trunking
-- Router-on-a-Stick
-- Inter-VLAN routing
+- Router subinterfaces
 - IPv4 addressing
-- Default gateways
-- MAC address learning
-- ARP resolution
-- ICMP/Ping verification
-- Cisco IOS verification commands
-- Packet Tracer Simulation Mode
+- ARP and ICMP verification
+
+The main goal was to understand how devices in **different VLANs communicate through a Layer 3 router**.
 
 ---
 
-## Network Topology
+## 🎯 Objectives
+
+- Create and configure VLANs
+- Assign switch access ports to VLANs
+- Configure 802.1Q trunk links
+- Configure Router-on-a-Stick
+- Create router subinterfaces
+- Configure default gateways
+- Enable communication between VLANs
+- Verify MAC address learning
+- Observe ARP and ICMP packet flow
+- Troubleshoot connectivity using Cisco IOS commands
+- Save and verify the final configuration
+
+---
+
+## 🖧 Network Topology
 
 ```text
-                         ┌──────────────┐
-                         │     R1       │
-                         │   Router     │
-                         │ Gi0/0 Gi0/1  │
-                         └──────┬───────┘
-                                │
-                    802.1Q Trunk Links
-                         │              │
-                  ┌──────┴──────┐  ┌────┴───────┐
-                  │    SW1      │  │    SW2     │
-                  │  VLAN 10/20 │  │  VLAN 30/40│
-                  └──┬─┬─┬─┬────┘  └──┬─┬─┬────┘
-                     │ │ │ │           │ │ │
-                    PC PC PC PC       PC PC PC
-                    0  1  2  3        5  6  7
+                              ┌──────────────┐
+                              │      R1      │
+                              │    Router    │
+                              │ Gi0/0  Gi0/1 │
+                              └──────┬──┬────┘
+                                     │  │
+                           802.1Q    │  │    802.1Q
+                           Trunk     │  │    Trunk
+                                     │  │
+                    ┌────────────────┘  └────────────────┐
+                    │                                    │
+              ┌─────┴─────┐                        ┌────┴─────┐
+              │    SW1    │                        │   SW2    │
+              │ VLAN 10/20│                        │ VLAN 30/40│
+              └─┬─┬─┬─┬───┘                        └─┬─┬─┬────┘
+                │ │ │ │                              │ │ │
+               PC0 PC1 PC2 PC3                      PC5 PC6 PC7
+```
 
-                         7 End Devices
+### Device Summary
+
+| Device | Role | Connections |
+|---|---|---|
+| R1 | Inter-VLAN Router | SW1 + SW2 |
+| SW1 | Access Switch | PC0–PC3 + R1 |
+| SW2 | Access Switch | PC5–PC7 + R1 |
+| PC0 | End Device | SW1 |
+| PC1 | End Device | SW1 |
+| PC2 | End Device | SW1 |
+| PC3 | End Device | SW1 |
+| PC5 | End Device | SW2 |
+| PC6 | End Device | SW2 |
+| PC7 | End Device | SW2 |
+
+---
+
+## 🏷️ VLAN Design
+
+| VLAN | Name | Network | Default Gateway |
+|---:|---|---|---|
+| 10 | Users | `192.168.10.0/24` | `192.168.10.1` |
+| 20 | Admin | `192.168.20.0/24` | `192.168.20.1` |
+| 30 | IT | `192.168.30.0/24` | `192.168.30.1` |
+| 40 | Cyber | `192.168.40.0/24` | `192.168.40.1` |
+
+> **Note:** The lab contains 7 end devices. Each host is assigned an IPv4 address from the network of its configured VLAN.
+
+---
+
+## 🔀 Switch Configuration
+
+### SW1 — VLANs 10 and 20
+
+```cisco
+enable
+configure terminal
+
+vlan 10
+ name Users
+
+vlan 20
+ name Admin
+
+interface range fa0/1-2
+ switchport mode access
+ switchport access vlan 10
+
+interface range fa0/3-4
+ switchport mode access
+ switchport access vlan 20
+
+interface fa0/5
+ switchport mode trunk
+
+end
+```
+
+### SW2 — VLANs 30 and 40
+
+```cisco
+enable
+configure terminal
+
+vlan 30
+ name IT
+
+vlan 40
+ name Cyber
+
+interface range fa0/1-2
+ switchport mode access
+ switchport access vlan 30
+
+interface fa0/3
+ switchport mode access
+ switchport access vlan 40
+
+interface fa0/4
+ switchport mode trunk
+
+end
 ```
 
 ---
 
-## Lab Architecture
+## 🚦 Router-on-a-Stick Configuration
 
-| Device | Role | Key Interfaces |
-|---|---|---|
-| R1 | Inter-VLAN Router | Gi0/0, Gi0/1 |
-| SW1 | Access Switch | Fa0/1–Fa0/4, Fa0/5 trunk |
-| SW2 | Access Switch | Fa0/1–Fa0/3, Fa0/4 trunk |
-| PC0–PC3 | End Devices | Fa0 |
-| PC5–PC7 | End Devices | Fa0 |
+The router uses subinterfaces to provide gateways for the VLANs.
 
----
-
-## VLAN & IP Design
-
-| VLAN | Purpose | Network | Default Gateway |
-|---:|---|---|---|
-| 10 | Users | 192.168.10.0/24 | 192.168.10.1 |
-| 20 | Admin | 192.168.20.0/24 | 192.168.20.1 |
-| 30 | IT | 192.168.30.0/24 | 192.168.30.1 |
-| 40 | Cyber | 192.168.40.0/24 | 192.168.40.1 |
-
-> The lab contains **7 end devices** distributed across the configured VLANs. Individual host addresses are assigned from their corresponding `/24` network.
-
----
-
-## Router Configuration
-
-The router uses **subinterfaces** to provide a Layer 3 gateway for each VLAN.
-
-Example configuration:
+### R1
 
 ```cisco
 enable
@@ -117,125 +187,45 @@ interface gigabitEthernet 0/1.40
 end
 ```
 
-### Why subinterfaces?
+### Router Interface Verification
 
-A single physical router interface can carry traffic for multiple VLANs when 802.1Q tagging is used.
+```cisco
+show ip interface brief
+```
 
-For example:
+Expected subinterfaces:
 
 ```text
-Gi0/0.10 → VLAN 10 → 192.168.10.1
-Gi0/0.20 → VLAN 20 → 192.168.20.1
-
-Gi0/1.30 → VLAN 30 → 192.168.30.1
-Gi0/1.40 → VLAN 40 → 192.168.40.1
+GigabitEthernet0/0.10    192.168.10.1    up    up
+GigabitEthernet0/0.20    192.168.20.1    up    up
+GigabitEthernet0/1.30    192.168.30.1    up    up
+GigabitEthernet0/1.40    192.168.40.1    up    up
 ```
 
 ---
 
-## Switch Configuration
+## 💻 End Device Configuration
 
-### VLAN creation
-
-Example on SW1:
-
-```cisco
-enable
-configure terminal
-
-vlan 10
- name Users
-
-vlan 20
- name Admin
-
-end
-```
-
-Example on SW2:
-
-```cisco
-enable
-configure terminal
-
-vlan 30
- name IT
-
-vlan 40
- name Cyber
-
-end
-```
-
-### Access ports
-
-Example:
-
-```cisco
-interface range fa0/1-2
- switchport mode access
- switchport access vlan 10
-```
-
-And:
-
-```cisco
-interface range fa0/3-4
- switchport mode access
- switchport access vlan 20
-```
-
-### Trunk configuration
-
-SW1:
-
-```cisco
-interface fa0/5
- switchport mode trunk
-```
-
-SW2:
-
-```cisco
-interface fa0/4
- switchport mode trunk
-```
-
-The trunk carries multiple VLANs using **IEEE 802.1Q tagging**.
-
----
-
-## End Device Configuration
-
-Each PC/laptop is configured with:
+Each PC/laptop was configured with:
 
 ```text
-IP Address
+IPv4 Address
 Subnet Mask: 255.255.255.0
 Default Gateway: VLAN gateway
 ```
 
-Example for a VLAN 10 host:
+Example:
 
 ```text
-IP Address:      192.168.10.x
-Subnet Mask:     255.255.255.0
-Default Gateway: 192.168.10.1
+VLAN 10 → 192.168.10.x → Gateway 192.168.10.1
+VLAN 20 → 192.168.20.x → Gateway 192.168.20.1
+VLAN 30 → 192.168.30.x → Gateway 192.168.30.1
+VLAN 40 → 192.168.40.x → Gateway 192.168.40.1
 ```
-
-Example for a VLAN 20 host:
-
-```text
-IP Address:      192.168.20.x
-Subnet Mask:     255.255.255.0
-Default Gateway: 192.168.20.1
-```
-
-The same principle applies to VLAN 30 and VLAN 40.
 
 ---
 
-## Verification
+## 🔍 Verification
 
 ### 1. Verify VLANs
 
@@ -243,54 +233,43 @@ The same principle applies to VLAN 30 and VLAN 40.
 show vlan brief
 ```
 
-Expected result:
+Confirmed VLANs:
 
 ```text
-10  Users   active
-20  Admin   active
-30  IT      active
-40  Cyber   active
+10  Users
+20  Admin
+30  IT
+40  Cyber
 ```
 
----
-
-### 2. Verify trunking
+### 2. Verify Trunks
 
 ```cisco
 show interfaces trunk
 ```
 
-Important fields:
+Expected:
 
 ```text
-Mode          on
-Encapsulation 802.1q
-Status        trunking
+Encapsulation: 802.1q
+Status:        trunking
 ```
 
----
-
-### 3. Verify router interfaces
+### 3. Verify MAC Address Learning
 
 ```cisco
-show ip interface brief
+show mac address-table
 ```
 
-The configured subinterfaces should show:
+The switch dynamically learns source MAC addresses and associates them with the correct switch ports/VLANs.
 
-```text
-up    up
-```
-
----
-
-### 4. Verify routing table
+### 4. Verify Routing Table
 
 ```cisco
 show ip route
 ```
 
-The router should learn the VLAN networks as directly connected networks:
+The router should show the four VLAN networks as directly connected:
 
 ```text
 C 192.168.10.0/24
@@ -299,130 +278,132 @@ C 192.168.30.0/24
 C 192.168.40.0/24
 ```
 
----
+### 5. Verify Connectivity
 
-### 5. Verify MAC address learning
-
-```cisco
-show mac address-table
-```
-
-The switch should dynamically learn end-device MAC addresses on the appropriate access ports.
-
----
-
-### 6. Test connectivity
-
-From a PC:
+Inter-VLAN communication was tested using:
 
 ```text
-ping <same-VLAN-host>
+ping <destination-IP>
 ```
 
-Then test inter-VLAN communication:
-
-```text
-ping <host-in-another-VLAN>
-```
-
-Successful replies confirm that the router is performing inter-VLAN routing.
+Successful ICMP replies confirmed Layer 3 communication between different VLANs.
 
 ---
 
-## ARP & ICMP Observation
+## 🧪 ARP & ICMP — Simulation Mode
 
-Packet Tracer Simulation Mode was also used to observe traffic.
+Packet Tracer **Simulation Mode** was used to observe how traffic moves through the network.
 
-The lab demonstrates the relationship between:
+The lab demonstrates:
 
 ```text
-ARP
- ↓
+Host
+  ↓
+ARP Request
+  ↓
+ARP Reply
+  ↓
 MAC Address Resolution
- ↓
+  ↓
 Ethernet Frame
- ↓
-Router / Layer 3 Forwarding
- ↓
+  ↓
+Router
+  ↓
+Inter-VLAN Routing
+  ↓
 ICMP Echo Request
- ↓
+  ↓
 ICMP Echo Reply
 ```
 
-This provides a practical view of what happens beyond simply running `ping`.
+This helped connect the theoretical concepts of **ARP, Ethernet, IP routing and ICMP** with actual packet flow.
 
 ---
 
-## Useful Cisco IOS Commands
+## 🛠️ Useful Cisco IOS Commands
 
 | Command | Purpose |
 |---|---|
-| `show vlan brief` | Display VLANs and assigned ports |
+| `show vlan brief` | Verify VLANs and access ports |
 | `show interfaces trunk` | Verify trunk links |
-| `show mac address-table` | Display learned MAC addresses |
-| `show ip interface brief` | Check interface status/IPs |
-| `show ip route` | Display routing table |
-| `show running-config` | View active configuration |
+| `show mac address-table` | View learned MAC addresses |
+| `show ip interface brief` | Check interface status/IP addresses |
+| `show ip route` | View routing table |
+| `show running-config` | View current configuration |
 | `show startup-config` | View saved configuration |
-| `show cdp neighbors` | Discover directly connected Cisco devices |
+| `show cdp neighbors` | View directly connected Cisco devices |
 | `copy running-config startup-config` | Save configuration |
 
 ---
 
-## Troubleshooting Checklist
+## 🖼️ Lab Evidence
 
-If an inter-VLAN ping fails, check in this order:
+Recommended screenshots stored in the project:
 
 ```text
-1. PC IP address
-2. Subnet mask
-3. Default gateway
-4. VLAN assignment
-5. Access-port configuration
-6. Trunk status
-7. 802.1Q VLAN ID
-8. Router subinterface IP
-9. Router interface status
-10. Routing table
+screenshots/
+├── 01-topology.png
+├── 02-vlan-configuration.png
+├── 03-sw1-trunk.png
+├── 04-sw2-trunk.png
+├── 05-router-interfaces.png
+├── 06-routing-table.png
+├── 07-mac-address-table.png
+├── 08-ping-test.png
+└── 09-simulation-arp-icmp.png
 ```
 
-Useful commands:
-
-```cisco
-show vlan brief
-show interfaces trunk
-show ip interface brief
-show ip route
-show mac address-table
-```
+These screenshots provide evidence of the configuration, verification and packet flow performed during the lab.
 
 ---
 
-## Evidence
+## 🧠 What I Learned
 
-Recommended screenshots included with this lab:
+This lab provided hands-on practice with:
 
-| Evidence | What it demonstrates |
-|---|---|
-| Topology | Complete 7-endpoint network |
-| VLAN table | VLAN creation and port assignment |
-| Trunk verification | 802.1Q trunk operation |
-| Router interfaces | Subinterfaces and gateway IPs |
-| Routing table | Directly connected VLAN networks |
-| MAC table | Dynamic MAC learning |
-| Ping results | Successful connectivity |
-| Simulation Mode | ARP/ICMP packet flow |
+- VLAN segmentation
+- Access ports
+- Trunk ports
+- IEEE 802.1Q
+- Router-on-a-Stick
+- Router subinterfaces
+- Inter-VLAN routing
+- IPv4 addressing
+- Default gateways
+- MAC address learning
+- ARP
+- ICMP
+- Cisco IOS verification
+- Basic network troubleshooting
+- Packet Tracer Simulation Mode
 
 ---
 
-## Project Files
+## ✅ Completion Checklist
+
+- [x] Network topology created
+- [x] 7 end devices connected
+- [x] VLANs created
+- [x] Access ports configured
+- [x] Trunk links configured
+- [x] Router subinterfaces configured
+- [x] IP addressing completed
+- [x] Default gateways configured
+- [x] Inter-VLAN routing tested
+- [x] MAC address table verified
+- [x] Routing table verified
+- [x] ARP/ICMP observed
+- [x] Configuration saved
+
+---
+
+## 📁 Project Structure
 
 ```text
 Inter-VLAN-Routing-Lab/
 │
 ├── README.md
 ├── Inter-VLAN-Routing-Lab.pkt
-│
 └── screenshots/
     ├── 01-topology.png
     ├── 02-vlan-configuration.png
@@ -437,65 +418,31 @@ Inter-VLAN-Routing-Lab/
 
 ---
 
-## Key Learning Outcomes
+## 🚀 Future Extensions
 
-After completing this lab, the following concepts were practiced hands-on:
+This lab can be extended with:
 
-- Layer 2 VLAN segmentation
-- Access vs trunk ports
-- IEEE 802.1Q
-- Router-on-a-Stick
-- Layer 3 inter-VLAN communication
-- IPv4 addressing
-- Default gateways
-- MAC address learning
-- ARP
-- ICMP
-- Cisco IOS verification
-- Basic network troubleshooting
-- Packet-level analysis in Cisco Packet Tracer
-
----
-
-## Lab Status
-
-- [x] Topology created
-- [x] VLANs configured
-- [x] Access ports configured
-- [x] Trunk ports configured
-- [x] Router subinterfaces configured
-- [x] End devices configured
-- [x] Inter-VLAN routing tested
-- [x] ARP/ICMP observed in Simulation Mode
-- [x] Configuration saved
-
----
-
-## Next Improvements
-
-Possible future extensions:
-
-- DHCP server configuration
+- DHCP
 - SSH remote management
 - Switch management VLAN
-- Port security
-- STP configuration and analysis
+- Port Security
+- Spanning Tree Protocol (STP)
 - EtherChannel
-- ACLs
-- Dynamic routing
-- Network security hardening
+- Access Control Lists (ACLs)
+- Dynamic Routing
+- Network Security Hardening
 
 ---
 
-## Author
+## 👨‍💻 Author
 
 **Rahul Bagaria**
 
-B.Tech Computer Science & Engineering  
-CCNA / Networking Hands-on Labs
+B.Tech — Computer Science & Engineering  
+CCNA / Networking Hands-on Lab Portfolio
 
-GitHub: [rahulbagaria91](https://github.com/rahulbagaria91)
+GitHub: **[rahulbagaria91](https://github.com/rahulbagaria91)**
 
 ---
 
-> This project was created as part of a hands-on CCNA networking practice portfolio using Cisco Packet Tracer.
+> Built as a hands-on CCNA networking lab using Cisco Packet Tracer.
