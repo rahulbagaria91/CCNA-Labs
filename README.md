@@ -7,7 +7,7 @@ A collection of hands-on Cisco Packet Tracer labs created while preparing for th
 | Lab | Description | Status |
 |------|-------------|--------|
 | ARP | Address Resolution Protocol | ✅ Completed |
-| VLAN | Virtual LAN | 🚧 Coming Soon |
+| VLAN | Virtual LAN |  ✅ Completed |
 | STP | Spanning Tree Protocol | 🚧 Coming Soon |
 | OSPF | Open Shortest Path First | 🚧 Coming Soon |
 
