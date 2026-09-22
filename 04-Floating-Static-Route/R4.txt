@@ -1,0 +1,11 @@
+enable
+configure terminal
+
+! Primary route - R4 -> R2 -> R1
+ip route 10.1.1.0 255.255.255.0 24.0.0.1
+
+! Floating backup route - R4 -> R3 -> R1
+ip route 10.1.1.0 255.255.255.0 34.0.0.1 10
+
+end
+show ip route 10.1.1.0
